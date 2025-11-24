@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Digital Marketing ROI Dashboard</title>
+<style>
+  body {
+    font-family: "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    background: #f8f9fb;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 0.5em;
+  }
+
+  .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .control-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    gap: 26px;
+    margin-bottom: 22px;
+    background: #fff;
+    padding: 18px 22px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .divider {
+    width: 1px;
+    background: #ddd;
+    align-self: stretch;
+  }
+
+  .control-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    min-width: 230px;
+  }
+
+  .control-block label { font-weight: 600; }
+  .control-block small { font-size: 12px; color: #555; }
+
+  input[type=number] {
+    padding: 6px 8px;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  input[type=checkbox] {
+    transform: scale(1.2);
+    margin-right: 6px;
+  }
+
+  button {
+    display: block;
+    margin: 20px auto 6px;
+    padding: 10px 24px;
+    background: #0078d7;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button:hover { background: #005ea8; }
+
+  #warningMsg {
+    text-align: center;
+    color: #d23636;
+    font-size: 14px;
+    min-height: 18px;
+    display: none;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+  }
+
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: right;
+  }
+  th { text-align: center; }
+  td input { width: 85px; text-align: right; }
+
+  .conv[readonly] {
+    background-color: #eaeaea;
+    color: #666;
+    cursor: not-allowed;
+  }
+
+  th.blue { background-color: #cfe5ff; }
+  th.green { background-color: #d3f7dc; }
+  .totals { background: #e0e0e0; font-weight: bold; }
+
+  #insights {
+    margin-top: 20px;
+    padding: 12px;
+    background: #f2f5f7;
+    border-radius: 6px;
+    font-size: 15px;
+    line-height: 1.5em;
+  }
+
+  #insights h2 { margin: 0 0 5px; font-size: 18px; color: #222; }
+  #insights p { margin: 4px 0 0; color: #555; }
+
+  @media(max-width:720px){
+    .divider { display: none; }
+    .control-panel { flex-direction: column; align-items: center; gap: 20px; }
+    td input { width:68px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <h1>Digital Marketing ROI Dashboard</h1>
+
+  <div class="control-panel">
+    <div class="control-block">
+      <label for="productPrice">💰 Product Revenue</label>
+      <small>How much is your product?</small>
+      <input type="number" id="productPrice" step="1" placeholder="Enter product price (HK$)" />
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="control-block">
+      <label>📦 Total Sales over Ad Period</label>
+      <small>Enter total purchases to auto‑distribute conversion rates</small>
+      <div>
+        <input type="checkbox" id="useTotalSales" />
+        <label for="useTotalSales" style="font-weight:500;">Use Total Sales over Ad Period</label>
+      </div>
+      <input type="number" id="totalSales" style="display:none;" placeholder="How many units were sold?" />
+    </div>
+  </div>
+
+  <table id="dashboard">
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Budget (HK$)</th>
+        <th>Impressions</th>
+        <th>Clicks</th>
+        <th class="blue">CPM (HK$)</th>
+        <th class="blue">CTR (%)</th>
+        <th class="blue">Conv. Rate (%)</th>
+        <th class="green">Purchases</th>
+        <th class="green">Revenue (HK$)</th>
+        <th class="green">Profit (HK$)</th>
+        <th class="green">ROI (×)</th>
+      </tr>
+    </thead>
+
+    <tbody id="dataBody">
+      <tr>
+        <td style="text-align:left;">Google Demand Gen</td>
+        <td><input type="number" class="budget"/></td>
+        <td><input type="number" class="impr"/></td>
+        <td><input type="number" class="clicks"/></td>
+        <td class="cpm">–</td><td class="ctr">–</td>
+        <td><input type="number" class="conv"/></td>
+        <td class="purchases">–</td><td class="revenue">–</td>
+        <td class="profit">–</td><td class="roi">–</td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">YouTube</td>
+        <td><input type="number" class="budget"/></td>
+        <td><input type="number" class="impr"/></td>
+        <td><input type="number" class="clicks"/></td>
+        <td class="cpm">–</td><td class="ctr">–</td>
+        <td><input type="number" class="conv"/></td>
+        <td class="purchases">–</td><td class="revenue">–</td>
+        <td class="profit">–</td><td class="roi">–</td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Facebook</td>
+        <td><input type="number" class="budget"/></td>
+        <td><input type="number" class="impr"/></td>
+        <td><input type="number" class="clicks"/></td>
+        <td class="cpm">–</td><td class="ctr">–</td>
+        <td><input type="number" class="conv"/></td>
+        <td class="purchases">–</td><td class="revenue">–</td>
+        <td class="profit">–</td><td class="roi">–</td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Google Shopping Ads</td>
+        <td><input type="number" class="budget"/></td>
+        <td><input type="number" class="impr"/></td>
+        <td><input type="number" class="clicks"/></td>
+        <td class="cpm">–</td><td class="ctr">–</td>
+        <td><input type="number" class="conv"/></td>
+        <td class="purchases">–</td><td class="revenue">–</td>
+        <td class="profit">–</td><td class="roi">–</td>
+      </tr>
+    </tbody>
+
+    <tfoot>
+      <tr class="totals">
+        <td style="text-align:right;">Total:</td>
+        <td id="totalBudget">–</td><td id="totalImpr">–</td><td id="totalClicks">–</td>
+        <td id="avgCPM">–</td><td id="avgCTR">–</td><td id="avgConv">–</td>
+        <td id="totalPurchases">–</td><td id="totalRevenue">–</td>
+        <td id="totalProfit">–</td><td id="totalROI">–</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <button id="calcBtn">Confirm & Calculate</button>
+  <div id="warningMsg"></div>
+
+  <div id="insights">
+    <h2>Insights</h2>
+    <p>Click <strong>Confirm & Calculate</strong> to see automatic insights.</p>
+  </div>
+
+</div>
+
+<script>
+function format(n, d=0){return Number(n).toLocaleString(undefined,{maximumFractionDigits:d})}
+function money(n){return "HK$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0})}
+function roiFmt(n){return isFinite(n)?n.toFixed(2):"–"}
+
+function showWarning(msg){
+  const warn=document.getElementById("warningMsg");
+  warn.textContent=msg;
+  warn.style.display="block";
+}
+
+function hideWarning(){
+  const warn=document.getElementById("warningMsg");
+  warn.style.display="none";
+  warn.textContent="";
+}
+
+function calculateAndShow(){
+  hideWarning();
+  const PRICE = parseFloat(document.getElementById("productPrice").value)||0;
+  const useTotal = document.getElementById("useTotalSales").checked;
+  const totalSalesInput=document.getElementById("totalSales");
+  const totalSales=parseFloat(totalSalesInput.value)||0;
+  const rows=document.querySelectorAll("#dataBody tr");
+
+  if(PRICE===0){
+    showWarning("Please enter how much your product costs before calculating.");
+    return;
+  }
+
+  if(useTotal && totalSales===0){
+    showWarning("Please enter total sales over the ad period.");
+    return;
+  }
+
+  if(!useTotal){
+    const allConvEmpty=[...document.querySelectorAll(".conv")].every(c=>!c.value);
+    if(allConvEmpty){
+      showWarning('Please use "Total Sales over Ad Period" if you do not want to enter any conversion rates.');
+      return;
+    }
+  }
+
+  rows.forEach(r=>{ r.querySelector(".conv").readOnly=useTotal; });
+
+  let totalBudget=0,totalImpr=0,totalClicks=0,totalPurch=0,totalRev=0,totalProfit=0;
+  let summary=[],clickShares=[];
+  rows.forEach(r=>clickShares.push(parseFloat(r.querySelector(".clicks").value)||0));
+  const sumClicks=clickShares.reduce((a,b)=>a+b,0);
+
+  rows.forEach(row=>{
+    const name=row.cells[0].textContent.trim();
+    const budget=parseFloat(row.querySelector(".budget").value)||0;
+    const impressions=parseFloat(row.querySelector(".impr").value)||0;
+    const clicks=parseFloat(row.querySelector(".clicks").value)||0;
+    let convRate=(parseFloat(row.querySelector(".conv").value)||0)/100;
+
+    if(useTotal && sumClicks>0 && totalSales>0){
+      const share=clicks/sumClicks;
+      const purchasesShare=totalSales*share;
+      convRate=purchasesShare/clicks;
+      row.querySelector(".conv").value=(convRate*100).toFixed(2);
+    }
+
+    const cpm=impressions>0?(budget/impressions)*1000:0;
+    const ctr=impressions>0?(clicks/impressions)*100:0;
+    const purchases=clicks*convRate;
+    const revenue=purchases*PRICE;
+    const profit=revenue-budget;
+    const roi=profit/budget;
+
+    row.querySelector(".cpm").textContent=format(cpm,1);
+    row.querySelector(".ctr").textContent=format(ctr,2);
+    row.querySelector(".purchases").textContent=format(purchases,0);
+    row.querySelector(".revenue").textContent=money(revenue);
+    row.querySelector(".profit").textContent=money(profit);
+    row.querySelector(".roi").textContent=roiFmt(roi);
+
+    totalBudget+=budget; totalImpr+=impressions; totalClicks+=clicks;
+    totalPurch+=purchases; totalRev+=revenue; totalProfit+=profit;
+    summary.push({name,roi,purchases,cpm,convRate});
+  });
+
+  const avgCPM=totalImpr>0?(totalBudget/totalImpr)*1000:0;
+  const avgCTR=totalImpr>0?(totalClicks/totalImpr)*100:0;
+  const avgConv=totalClicks>0?(totalPurch/totalClicks)*100:0;
+  const totalROI=totalBudget>0?(totalProfit/totalBudget):0;
+
+  document.getElementById("totalBudget").textContent=money(totalBudget);
+  document.getElementById("totalImpr").textContent=format(totalImpr);
+  document.getElementById("totalClicks").textContent=format(totalClicks);
+  document.getElementById("avgCPM").textContent=format(avgCPM,1);
+  document.getElementById("avgCTR").textContent=format(avgCTR,2);
+  document.getElementById("avgConv").textContent=format(avgConv,2);
+  document.getElementById("totalPurchases").textContent=format(totalPurch);
+  document.getElementById("totalRevenue").textContent=money(totalRev);
+  document.getElementById("totalProfit").textContent=money(totalProfit);
+  document.getElementById("totalROI").textContent=roiFmt(totalROI);
+
+  let insights="<h2>Insights</h2>";
+  if(summary.length>0){
+    const bestROI=summary.reduce((a,b)=>a.roi>b.roi?a:b);
+    const mostPurch=summary.reduce((a,b)=>a.purchases>b.purchases?a:b);
+    const lowCPM=summary.reduce((a,b)=>a.cpm<b.cpm?a:b);
+    const allConvRates=summary.map(s=>s.convRate.toFixed(2));
+    const convsEqual=allConvRates.every(v=>v===allConvRates[0]);
+    const secondLine=convsEqual
+      ? `📦 <strong>${mostPurch.name}</strong> drives the most purchases (<strong>${format(mostPurch.purchases)}</strong>) if conversion rate for all platforms are equal.`
+      : `🛒 <strong>${mostPurch.name}</strong> drives the most purchases (<strong>${format(mostPurch.purchases)}</strong>).`;
+    insights+=`
+      <p>📊 <strong>${bestROI.name}</strong> delivers the highest ROI at <strong>${roiFmt(bestROI.roi)}×</strong>.</p>
+      <p>${secondLine}</p>
+      <p>💵 <strong>${lowCPM.name}</strong> achieves the lowest CPM at <strong>HK$${format(lowCPM.cpm,1)}</strong>.</p>
+      <p>⚙️ Overall campaign ROI: <strong>${roiFmt(totalROI)}×</strong> across all platforms.</p>
+    `;
+    hideWarning(); // hide when success
+  }
+  document.getElementById("insights").innerHTML=insights;
+}
+
+document.getElementById("calcBtn").addEventListener("click",calculateAndShow);
+document.getElementById("useTotalSales").addEventListener("change",e=>{
+  const show=e.target.checked;
+  const totalSalesInput=document.getElementById("totalSales");
+  totalSalesInput.style.display=show?"block":"none";
+  totalSalesInput.required=show;
+  document.querySelectorAll(".conv").forEach(inp=>inp.readOnly=show);
+  hideWarning();
+});
+</script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Digital Marketing ROI Dashboard</title>
+<title>Digital Marketing ROI Calculator</title>
 <style>
   body {
     font-family: "Segoe UI", Roboto, sans-serif;
@@ -109,6 +109,7 @@
   th.blue { background-color: #cfe5ff; }
   th.green { background-color: #d3f7dc; }
   .totals { background: #e0e0e0; font-weight: bold; }
+  .roi { font-weight: bold; }
 
   #insights {
     margin-top: 20px;
@@ -164,6 +165,7 @@
         <th>Clicks</th>
         <th class="blue">CPM (HK$)</th>
         <th class="blue">CTR (%)</th>
+        <th class="blue">CPC (HK$)</th>
         <th class="blue">Conv. Rate (%)</th>
         <th class="green">Purchases</th>
         <th class="green">Revenue (HK$)</th>
@@ -171,14 +173,13 @@
         <th class="green">ROI (×)</th>
       </tr>
     </thead>
-
     <tbody id="dataBody">
       <tr>
         <td style="text-align:left;">Google Demand Gen</td>
         <td><input type="number" class="budget"/></td>
         <td><input type="number" class="impr"/></td>
         <td><input type="number" class="clicks"/></td>
-        <td class="cpm">–</td><td class="ctr">–</td>
+        <td class="cpm">–</td><td class="ctr">–</td><td class="cpc">–</td>
         <td><input type="number" class="conv"/></td>
         <td class="purchases">–</td><td class="revenue">–</td>
         <td class="profit">–</td><td class="roi">–</td>
@@ -188,7 +189,7 @@
         <td><input type="number" class="budget"/></td>
         <td><input type="number" class="impr"/></td>
         <td><input type="number" class="clicks"/></td>
-        <td class="cpm">–</td><td class="ctr">–</td>
+        <td class="cpm">–</td><td class="ctr">–</td><td class="cpc">–</td>
         <td><input type="number" class="conv"/></td>
         <td class="purchases">–</td><td class="revenue">–</td>
         <td class="profit">–</td><td class="roi">–</td>
@@ -198,7 +199,7 @@
         <td><input type="number" class="budget"/></td>
         <td><input type="number" class="impr"/></td>
         <td><input type="number" class="clicks"/></td>
-        <td class="cpm">–</td><td class="ctr">–</td>
+        <td class="cpm">–</td><td class="ctr">–</td><td class="cpc">–</td>
         <td><input type="number" class="conv"/></td>
         <td class="purchases">–</td><td class="revenue">–</td>
         <td class="profit">–</td><td class="roi">–</td>
@@ -208,7 +209,7 @@
         <td><input type="number" class="budget"/></td>
         <td><input type="number" class="impr"/></td>
         <td><input type="number" class="clicks"/></td>
-        <td class="cpm">–</td><td class="ctr">–</td>
+        <td class="cpm">–</td><td class="ctr">–</td><td class="cpc">–</td>
         <td><input type="number" class="conv"/></td>
         <td class="purchases">–</td><td class="revenue">–</td>
         <td class="profit">–</td><td class="roi">–</td>
@@ -218,10 +219,17 @@
     <tfoot>
       <tr class="totals">
         <td style="text-align:right;">Total:</td>
-        <td id="totalBudget">–</td><td id="totalImpr">–</td><td id="totalClicks">–</td>
-        <td id="avgCPM">–</td><td id="avgCTR">–</td><td id="avgConv">–</td>
-        <td id="totalPurchases">–</td><td id="totalRevenue">–</td>
-        <td id="totalProfit">–</td><td id="totalROI">–</td>
+        <td id="totalBudget">–</td>
+        <td id="totalImpr">–</td>
+        <td id="totalClicks">–</td>
+        <td id="avgCPM">–</td>
+        <td id="avgCTR">–</td>
+        <td id="avgCPC">–</td>
+        <td id="avgConv">–</td>
+        <td id="totalPurchases">–</td>
+        <td id="totalRevenue">–</td>
+        <td id="totalProfit">–</td>
+        <td id="totalROI">–</td>
       </tr>
     </tfoot>
   </table>
@@ -237,8 +245,8 @@
 </div>
 
 <script>
-function format(n, d=0){return Number(n).toLocaleString(undefined,{maximumFractionDigits:d})}
-function money(n){return "HK$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0})}
+function format(n,d=0){return Number(n).toLocaleString(undefined,{maximumFractionDigits:d})}
+function money(n){return "HK$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:2})}
 function roiFmt(n){return isFinite(n)?n.toFixed(2):"–"}
 
 function showWarning(msg){
@@ -255,22 +263,13 @@ function hideWarning(){
 
 function calculateAndShow(){
   hideWarning();
-  const PRICE = parseFloat(document.getElementById("productPrice").value)||0;
-  const useTotal = document.getElementById("useTotalSales").checked;
-  const totalSalesInput=document.getElementById("totalSales");
-  const totalSales=parseFloat(totalSalesInput.value)||0;
+  const PRICE=parseFloat(document.getElementById("productPrice").value)||0;
+  const useTotal=document.getElementById("useTotalSales").checked;
+  const totalSales=parseFloat(document.getElementById("totalSales").value)||0;
   const rows=document.querySelectorAll("#dataBody tr");
 
-  if(PRICE===0){
-    showWarning("Please enter how much your product costs before calculating.");
-    return;
-  }
-
-  if(useTotal && totalSales===0){
-    showWarning("Please enter total sales over the ad period.");
-    return;
-  }
-
+  if(PRICE===0){showWarning("Please enter how much your product costs before calculating.");return;}
+  if(useTotal&&totalSales===0){showWarning("Please enter total sales over the ad period.");return;}
   if(!useTotal){
     const allConvEmpty=[...document.querySelectorAll(".conv")].every(c=>!c.value);
     if(allConvEmpty){
@@ -279,49 +278,51 @@ function calculateAndShow(){
     }
   }
 
-  rows.forEach(r=>{ r.querySelector(".conv").readOnly=useTotal; });
+  rows.forEach(r=>{r.querySelector(".conv").readOnly=useTotal;});
 
-  let totalBudget=0,totalImpr=0,totalClicks=0,totalPurch=0,totalRev=0,totalProfit=0;
-  let summary=[],clickShares=[];
-  rows.forEach(r=>clickShares.push(parseFloat(r.querySelector(".clicks").value)||0));
-  const sumClicks=clickShares.reduce((a,b)=>a+b,0);
+  let totalBudget=0,totalImpr=0,totalClicks=0,totalPurch=0,totalRev=0,totalProfit=0,totalCPC=0,countRows=0;
+  let summary=[],clicksArr=[...rows].map(r=>parseFloat(r.querySelector(".clicks").value)||0);
+  const sumClicks=clicksArr.reduce((a,b)=>a+b,0);
 
   rows.forEach(row=>{
     const name=row.cells[0].textContent.trim();
     const budget=parseFloat(row.querySelector(".budget").value)||0;
-    const impressions=parseFloat(row.querySelector(".impr").value)||0;
+    const impr=parseFloat(row.querySelector(".impr").value)||0;
     const clicks=parseFloat(row.querySelector(".clicks").value)||0;
     let convRate=(parseFloat(row.querySelector(".conv").value)||0)/100;
-
-    if(useTotal && sumClicks>0 && totalSales>0){
+    if(useTotal&&sumClicks>0&&totalSales>0){
       const share=clicks/sumClicks;
-      const purchasesShare=totalSales*share;
-      convRate=purchasesShare/clicks;
+      const purchShare=totalSales*share;
+      convRate=purchShare/clicks;
       row.querySelector(".conv").value=(convRate*100).toFixed(2);
     }
 
-    const cpm=impressions>0?(budget/impressions)*1000:0;
-    const ctr=impressions>0?(clicks/impressions)*100:0;
-    const purchases=clicks*convRate;
-    const revenue=purchases*PRICE;
-    const profit=revenue-budget;
-    const roi=profit/budget;
+    const cpm=impr>0?(budget/impr)*1000:0;
+    const ctr=impr>0?(clicks/impr)*100:0;
+    const cpc=clicks>0?budget/clicks:0;
+    const purch=clicks*convRate;
+    const rev=purch*PRICE;
+    const prof=rev-budget;
+    const roi=budget>0?(prof/budget):0;
 
     row.querySelector(".cpm").textContent=format(cpm,1);
     row.querySelector(".ctr").textContent=format(ctr,2);
-    row.querySelector(".purchases").textContent=format(purchases,0);
-    row.querySelector(".revenue").textContent=money(revenue);
-    row.querySelector(".profit").textContent=money(profit);
+    row.querySelector(".cpc").textContent=money(cpc);
+    row.querySelector(".purchases").textContent=format(purch,0);
+    row.querySelector(".revenue").textContent=money(rev);
+    row.querySelector(".profit").textContent=money(prof);
     row.querySelector(".roi").textContent=roiFmt(roi);
 
-    totalBudget+=budget; totalImpr+=impressions; totalClicks+=clicks;
-    totalPurch+=purchases; totalRev+=revenue; totalProfit+=profit;
-    summary.push({name,roi,purchases,cpm,convRate});
+    totalBudget+=budget; totalImpr+=impr; totalClicks+=clicks; totalPurch+=purch;
+    totalRev+=rev; totalProfit+=prof;
+    if(cpc>0){totalCPC+=cpc; countRows++;}
+    summary.push({name,roi,cpc,cpm,purch});
   });
 
   const avgCPM=totalImpr>0?(totalBudget/totalImpr)*1000:0;
   const avgCTR=totalImpr>0?(totalClicks/totalImpr)*100:0;
   const avgConv=totalClicks>0?(totalPurch/totalClicks)*100:0;
+  const avgCPC=countRows>0?(totalCPC/countRows):0;
   const totalROI=totalBudget>0?(totalProfit/totalBudget):0;
 
   document.getElementById("totalBudget").textContent=money(totalBudget);
@@ -329,6 +330,7 @@ function calculateAndShow(){
   document.getElementById("totalClicks").textContent=format(totalClicks);
   document.getElementById("avgCPM").textContent=format(avgCPM,1);
   document.getElementById("avgCTR").textContent=format(avgCTR,2);
+  document.getElementById("avgCPC").textContent=money(avgCPC);
   document.getElementById("avgConv").textContent=format(avgConv,2);
   document.getElementById("totalPurchases").textContent=format(totalPurch);
   document.getElementById("totalRevenue").textContent=money(totalRev);
@@ -338,21 +340,17 @@ function calculateAndShow(){
   let insights="<h2>Insights</h2>";
   if(summary.length>0){
     const bestROI=summary.reduce((a,b)=>a.roi>b.roi?a:b);
-    const mostPurch=summary.reduce((a,b)=>a.purchases>b.purchases?a:b);
+    const lowCPC=summary.reduce((a,b)=>a.cpc<b.cpc?a:b);
     const lowCPM=summary.reduce((a,b)=>a.cpm<b.cpm?a:b);
-    const allConvRates=summary.map(s=>s.convRate.toFixed(2));
-    const convsEqual=allConvRates.every(v=>v===allConvRates[0]);
-    const secondLine=convsEqual
-      ? `📦 <strong>${mostPurch.name}</strong> drives the most purchases (<strong>${format(mostPurch.purchases)}</strong>) if conversion rate for all platforms are equal.`
-      : `🛒 <strong>${mostPurch.name}</strong> drives the most purchases (<strong>${format(mostPurch.purchases)}</strong>).`;
     insights+=`
-      <p>📊 <strong>${bestROI.name}</strong> delivers the highest ROI at <strong>${roiFmt(bestROI.roi)}×</strong>.</p>
-      <p>${secondLine}</p>
-      <p>💵 <strong>${lowCPM.name}</strong> achieves the lowest CPM at <strong>HK$${format(lowCPM.cpm,1)}</strong>.</p>
-      <p>⚙️ Overall campaign ROI: <strong>${roiFmt(totalROI)}×</strong> across all platforms.</p>
+      <p>📊 <strong>${bestROI.name}</strong> achieves the highest ROI (<strong>${roiFmt(bestROI.roi)}×</strong>).</p>
+      <p>💰 <strong>${lowCPC.name}</strong> has the lowest CPC (<strong>${money(lowCPC.cpc)}</strong>).</p>
+      <p>💵 <strong>${lowCPM.name}</strong> provides the cheapest reach (CPM <strong>HK$${format(lowCPM.cpm,1)}</strong>).</p>
+      <p>⚙️ Overall campaign ROI: <strong>${roiFmt(totalROI)}×</strong>.</p>
     `;
-    hideWarning(); // hide when success
+    hideWarning();
   }
+
   document.getElementById("insights").innerHTML=insights;
 }
 
